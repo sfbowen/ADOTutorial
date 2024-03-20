@@ -29,3 +29,29 @@ stages:
         Dockerfile: '**/Dockerfile'
         tags: |
           $(tag)
+- stage: provision
+  displayName: 'Terraforming on Azure'
+  dependsOn: Build
+  jobs:
+  - job: Provision
+    displayname: 'Provisoning container instance'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables: 
+    - group: TerraformSPVar
+    steps:
+    - script: |
+        set -e 
+
+        terraform init -input=false
+        terraform apply -input=false -auto-approved
+    name: 'RunTerraform'
+    displayname: 'Run Terraform'
+    env:
+      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      ARM_TENANT_ID: $(ARM_TENANT_ID)
+      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+      TF_VAR_imagebuild: $(tag)
+        
+
